@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify # type: ignore
 import os
 import numpy as np
 # import pycuda.driver as drv
