@@ -18,4 +18,20 @@ document.getElementById("uploadForm").onsubmit = async function(event) {
     document.getElementById("processed").src = "/" + result.processed;
     document.getElementById("original").style.display = "block";
     document.getElementById("processed").style.display = "block";
+
+    const kernelInput = document.getElementById("kernel_size");
+    const kernelOutput = document.getElementById("Mascara");
+    kernelOutput.textContent = "Mascara Utilizada: "+kernelInput.value;
+
 };
+
+// document.addEventListener("DOMContentLoaded", function() {
+//     const kernelInput = document.getElementById("kernel_size");
+//     const kernelOutput = document.getElementById("Mascara");
+
+//     kernelInput.addEventListener("input",function(){
+//         kernelOutput.textContent = "Mascara Utilizada: "+kernelInput.value;
+
+//     });
+// });
+
