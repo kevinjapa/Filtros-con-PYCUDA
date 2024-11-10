@@ -5,7 +5,6 @@
     font-family: 'Arial', sans-serif;
 }
 
-/* Container for center alignment */
 .container {
     max-width: 900px;
     margin: 0 auto;
@@ -15,19 +14,20 @@
     transition: all 0.3s ease;
 }
 
-/* Page title */
-h1 {
+header {
+    /* padding-top: 2%; */
+    padding: 1%;
     text-align: center;
-    font-size: 2.5rem;
-    color: #5A67D8;
+    font-size: 1.5rem;
+    color: #8791ec;
     margin-bottom: 20px;
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 1px;
     animation: fadeIn 1s ease-in-out;
+    background-color: #6b7483;
 }
 
-/* Form styling */
 form {
     background: linear-gradient(145deg, #e6e9ef, #ffffff);
     padding: 30px;
@@ -53,7 +53,6 @@ label {
     font-size: 1.1rem;
 }
 
-/* Input and Select styling */
 input[type="file"], select, input[type="number"] {
     width: 100%;
     padding: 12px;
@@ -70,7 +69,6 @@ input[type="file"]:focus, select:focus, input[type="number"]:focus {
     box-shadow: 0px 0px 8px rgba(90, 103, 216, 0.3);
 }
 
-/* Submit button */
 .submit-button {
     width: 100%;
     padding: 12px;
@@ -90,12 +88,14 @@ input[type="file"]:focus, select:focus, input[type="number"]:focus {
     box-shadow: 0px 8px 15px rgba(67, 65, 144, 0.3);
 }
 
-/* Image container styling */
-.image-container {
+.imagen {
     display: flex;
     justify-content: space-between;
     gap: 30px;
     padding: 20px 0;
+    transition: all 0.3s ease;
+    max-width: 900px;
+    margin: 0 auto;
     transition: all 0.3s ease;
 }
 
@@ -163,6 +163,19 @@ body {
     display: flex;
     flex-direction: column;
 }
+.resultado{
+    background-color: #f5f7fa;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+    margin-bottom: 30px;
+    transition: transform 0.2s ease;
+    margin-left: 30%;
+    margin-right: 30%;
+}
+#informacion{
+    text-align: center;
+}
 
 footer {
     border-bottom: 1px solid #4A5568;
@@ -172,5 +185,5 @@ footer {
     font-size: 1rem;
     color: #f5f7fa;
     margin-top: auto;
-    background-color: #4A5568;
+    background-color: #748093;
 }

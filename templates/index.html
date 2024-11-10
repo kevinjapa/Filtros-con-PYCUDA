@@ -1,45 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplicación de Filtros de Imagen</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <h1>Aplicación de Filtros de Imagen</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <label for="file">Seleccione una imagen:</label>
-        <input type="file" name="file" id="file" required><br><br>
-
-        <label for="filter_type">Seleccione un filtro:</label>
-        <select name="filter_type" id="filter_type" required>
-            <option value="emboss">Emboss</option>
-            <option value="gabor">Gabor</option>
-            <option value="high_boost">High Boost</option>
-        </select><br><br>
-
-        <label for="kernel_size">Tamaño del Kernel:</label>
-        <input type="number" name="kernel_size" id="kernel_size" min="3" max="25" step="2" required><br><br>
-
-        <button type="submit">Aplicar Filtro</button>
-    </form>
-
-    <div class="image-container" id="images">
-        <div id="original-container">
-            <h3>Imagen Original</h3>
-            <img id="original" src="" alt="Imagen Original" style="display: none;">
-        </div>
-        <div id="processed-container">
-            <h3>Imagen Procesada</h3>
-            <img id="processed" src="" alt="Imagen Procesada" style="display: none;">
-        </div>
-    </div>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,15 +6,16 @@
     <title>Aplicación de Filtros de Imagen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+<header>
+    <h1>Aplicación de Filtros de Imagen</h1>
+</header>
 <body>
     <div class="container">
-        <h1>Aplicación de Filtros de Imagen</h1>
         <form id="uploadForm" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="file">Seleccione una imagen:</label>
                 <input type="file" name="file" id="file" required>
             </div>
-
             <div class="form-group">
                 <label for="filter_type">Seleccione un filtro:</label>
                 <select name="filter_type" id="filter_type" required>
@@ -65,27 +24,34 @@
                     <option value="high_boost">High Boost</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label for="kernel_size">Tamaño del Kernel:</label>
                 <input type="number" name="kernel_size" id="kernel_size" min="3" max="25" step="2" required>
             </div>
-
             <button type="submit" class="submit-button">Aplicar Filtro</button>
         </form>
+    </div>
 
-        <div class="image-container" id="images">
-            <div id="original-container" class="image-section">
-                <h3>Imagen Original</h3>
-                <img id="original" src="" alt="Imagen Original" style="display: none;">
-            </div>
-            <div id="processed-container" class="image-section">
-                <h3>Imagen Procesada</h3>
-                <img id="processed" src="" alt="Imagen Procesada" style="display: none;">
-            </div>
+    <div class="resultado">
+        <label id="informacion">Informacion</label>
+        <label id="bloques"> Numero de Bloques: </label>
+        <label id="hilos"> Numero de Hilos: </label>
+        <label id="Procesamiento"> Tiempo de Procesamiento: </label>
+        <label id="Mascara"> Mascara Utilizada: </label>
+    </div>
+
+    <div class="imagen" id="images">
+        <div id="original-container" class="image-section">
+            <h3>Imagen Original</h3>
+            <img id="original" src="" alt="Imagen Original" style="display: none;">
+        </div>
+        <div id="processed-container" class="image-section">
+            <h3>Imagen Procesada</h3>
+            <img id="processed" src="" alt="Imagen Procesada" style="display: none;">
         </div>
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
 </body>
 <footer>
     <div class="footer"Realizado Por</div>
