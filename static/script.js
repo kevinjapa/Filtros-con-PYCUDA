@@ -73,5 +73,6 @@ document.getElementById("uploadForm").onsubmit = async function(event) {
 
 
     document.querySelector(".resultado").style.display = "block";
-    document.getElementById("images").style.display = "block";
+    document.getElementById("images").style.display = "flex";
+    
 };
