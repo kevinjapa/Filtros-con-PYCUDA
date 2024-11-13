@@ -4,7 +4,7 @@ import numpy as np
 import pycuda.driver as drv
 from pycuda.compiler import SourceModule
 from PIL import Image
-import time  # Importa la biblioteca time para medir el tiempo de ejecución
+import time
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads/'
@@ -74,9 +74,12 @@ def create_high_boost_kernel(kernel_size, A):
     kernel[half_size * kernel_size + half_size] = A + (kernel_size * kernel_size) - 1
     return kernel
 
-def apply_filter(image, kernel, width, height, kernel_size):
+def apply_filter(image, kernel, width, height, kernel_size, hilos):
     dest = np.zeros_like(image, dtype=np.float64)
-    block_size = (16, 16, 1)
+    
+    # Calcular block_size en función de la cantidad de hilos especificada
+    block_dim = int(np.sqrt(hilos))  # La raíz cuadrada para bloques de forma cuadrada
+    block_size = (block_dim, block_dim, 1)
     grid_size = (int(np.ceil(width / block_size[0])), int(np.ceil(height / block_size[1])), 1)
 
     # Asegurarse de que el contexto global esté activo
@@ -117,6 +120,7 @@ def upload_file():
     file = request.files['file']
     filter_type = request.form.get('filter_type')
     kernel_size = int(request.form.get('kernel_size', 5))
+    hilos = int(request.form.get('hilos', 1024))  # Obtener cantidad de hilos de la solicitud
 
     if file.filename == '':
         return jsonify({"error": "No selected file"})
@@ -137,7 +141,7 @@ def upload_file():
         return jsonify({"error": "Filter type not supported"})
 
     try:
-        result = apply_filter(gray_image, kernel, width, height, kernel_size)
+        result = apply_filter(gray_image, kernel, width, height, kernel_size, hilos)
     except drv.LogicError as e:
         return jsonify({"error": "CUDA Error: " + str(e)})
 
