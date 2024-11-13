@@ -67,8 +67,8 @@ document.getElementById("uploadForm").onsubmit = async function(event) {
     document.getElementById("Mascara").textContent = "Mascara Utilizada: " + result.kernel_size + " x " + result.kernel_size;
     document.getElementById("bloques").textContent = "Número de Bloques: " + result.num_blocks;
     document.getElementById("Procesamiento").textContent = "Tiempo de Procesamiento: " + result.gpu_time.toFixed(6) + " segundos";
-    document.getElementById("informacion").textContent = "Tamaño de la Imagen: " + result.image_size[0] + " x " + result.image_size[1];
-    
+    document.getElementById("tamanio").textContent = "Tamaño de la Imagen: " + result.image_size[0] + " x " + result.image_size[1];
+
     document.getElementById("hilos").textContent = "Número de Hilos: " + hilosInput.value;
 
 
