@@ -39,7 +39,7 @@ document.getElementById("uploadForm").onsubmit = async function(event) {
     let formData = new FormData(this);
     
     // Verificar si el campo de hilos está vacío, y si lo está, asignar el valor 1024
-    const hilosInput = document.getElementById("hilos");
+    const hilosInput = document.getElementById("hilo");
     if (hilosInput.value === "") {
         hilosInput.value = 1024; // Asignar 1024 si está vacío
     }
@@ -69,6 +69,9 @@ document.getElementById("uploadForm").onsubmit = async function(event) {
     document.getElementById("Procesamiento").textContent = "Tiempo de Procesamiento: " + result.gpu_time.toFixed(6) + " segundos";
     document.getElementById("informacion").textContent = "Tamaño de la Imagen: " + result.image_size[0] + " x " + result.image_size[1];
     
+    document.getElementById("hilos").textContent = "Número de Hilos: " + hilosInput.value;
+
+
     document.querySelector(".resultado").style.display = "block";
     document.getElementById("images").style.display = "block";
 };
