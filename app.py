@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify # type: ignore
+from flask import Flask, render_template, request, jsonify
 import os
 import numpy as np
-# import pycuda.driver as drv
-# import pycuda.autoinit
-# from pycuda.compiler import SourceModule
+import pycuda.driver as drv
+from pycuda.compiler import SourceModule
 from PIL import Image
-import time
+import time  # Importa la biblioteca time para medir el tiempo de ejecución
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads/'
@@ -16,28 +15,33 @@ app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
-# mod = SourceModule("""
-#     __global__ void applyConvolutionGPU(unsigned char* d_image, double* d_kernel, double* d_result, int width, int height, int kernel_size) {
-#         int x = blockIdx.x * blockDim.x + threadIdx.x;
-#         int y = blockIdx.y * blockDim.y + threadIdx.y;
-#         int half_kernel = kernel_size / 2;
+# Inicialización de CUDA y creación de un contexto global
+drv.init()
+device = drv.Device(0)
+context = device.make_context()  # Crea un contexto persistente para toda la aplicación
 
-#         if (x < width && y < height) {
-#             if (x >= half_kernel && x < width - half_kernel && y >= half_kernel && y < height - half_kernel) {
-#                 double sum = 0.0;
-#                 for (int ky = -half_kernel; ky <= half_kernel; ++ky) {
-#                     for (int kx = -half_kernel; kx <= half_kernel; ++kx) {
-#                         int pixel_value = d_image[(y + ky) * width + (x + kx)];
-#                         sum += pixel_value * d_kernel[(ky + half_kernel) * kernel_size + (kx + half_kernel)];
-#                     }
-#                 }
-#                 d_result[y * width + x] = sum;
-#             } else {
-#                 d_result[y * width + x] = 0;
-#             }
-#         }
-#     }
-# """)
+mod = SourceModule("""
+    __global__ void applyConvolutionGPU(unsigned char* d_image, double* d_kernel, double* d_result, int width, int height, int kernel_size) {
+        int x = blockIdx.x * blockDim.x + threadIdx.x;
+        int y = blockIdx.y * blockDim.y + threadIdx.y;
+        int half_kernel = kernel_size / 2;
+
+        if (x < width && y < height) {
+            if (x >= half_kernel && x < width - half_kernel && y >= half_kernel && y < height - half_kernel) {
+                double sum = 0.0;
+                for (int ky = -half_kernel; ky <= half_kernel; ++ky) {
+                    for (int kx = -half_kernel; kx <= half_kernel; ++kx) {
+                        int pixel_value = d_image[(y + ky) * width + (x + kx)];
+                        sum += pixel_value * d_kernel[(ky + half_kernel) * kernel_size + (kx + half_kernel)];
+                    }
+                }
+                d_result[y * width + x] = sum;
+            } else {
+                d_result[y * width + x] = 0;
+            }
+        }
+    }
+""")
 
 def create_emboss_kernel(kernel_size):
     kernel = np.zeros(kernel_size * kernel_size, dtype=np.float64)
@@ -74,9 +78,30 @@ def apply_filter(image, kernel, width, height, kernel_size):
     dest = np.zeros_like(image, dtype=np.float64)
     block_size = (16, 16, 1)
     grid_size = (int(np.ceil(width / block_size[0])), int(np.ceil(height / block_size[1])), 1)
-    # applyConvolutionGPU = mod.get_function("applyConvolutionGPU")
-    # applyConvolutionGPU(drv.In(image), drv.In(kernel), drv.Out(dest), np.int32(width), np.int32(height), np.int32(kernel_size), block=block_size, grid=grid_size)
-    # drv.Context.synchronize()
+
+    # Asegurarse de que el contexto global esté activo
+    context.push()
+    try:
+        applyConvolutionGPU = mod.get_function("applyConvolutionGPU")
+        
+        # Medir el tiempo de ejecución de la GPU
+        start_time = time.time()  # Tiempo inicial
+        
+        applyConvolutionGPU(
+            drv.In(image), drv.In(kernel), drv.Out(dest), 
+            np.int32(width), np.int32(height), np.int32(kernel_size), 
+            block=block_size, grid=grid_size
+        )
+        
+        context.synchronize()  # Asegura la sincronización de la GPU
+        end_time = time.time()  # Tiempo final
+        
+        gpu_time = end_time - start_time  # Tiempo de ejecución en segundos
+        print(f"Tiempo de ejecución en la GPU: {gpu_time:.6f} segundos")  # Muestra el tiempo en la consola
+        
+    finally:
+        context.pop()  # Libera el contexto después de la operación
+    
     min_val, max_val = np.min(dest), np.max(dest)
     return ((dest - min_val) / (max_val - min_val) * 255).astype(np.uint8)
 
@@ -91,7 +116,7 @@ def upload_file():
 
     file = request.files['file']
     filter_type = request.form.get('filter_type')
-    kernel_size = int(request.form.get('kernel_size'))
+    kernel_size = int(request.form.get('kernel_size', 5))
 
     if file.filename == '':
         return jsonify({"error": "No selected file"})
@@ -100,14 +125,22 @@ def upload_file():
     file.save(filepath)
 
     gray_image, width, height = load_image(filepath)
+    
+    # Selección del filtro en función del tipo solicitado
     if filter_type == 'emboss':
         kernel = create_emboss_kernel(kernel_size)
     elif filter_type == 'gabor':
         kernel = create_gabor_kernel(kernel_size, 4.0, 0, 10.0, 0.5, 0)
     elif filter_type == 'high_boost':
         kernel = create_high_boost_kernel(kernel_size, 10.0)
+    else:
+        return jsonify({"error": "Filter type not supported"})
 
-    result = apply_filter(gray_image, kernel, width, height, kernel_size)
+    try:
+        result = apply_filter(gray_image, kernel, width, height, kernel_size)
+    except drv.LogicError as e:
+        return jsonify({"error": "CUDA Error: " + str(e)})
+
     result_filepath = os.path.join(app.config['PROCESSED_FOLDER'], 'processed_' + file.filename)
     save_image(result, width, height, result_filepath)
 
@@ -124,4 +157,5 @@ def save_image(result, width, height, filename):
     result_image.save(filename)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Ejecuta el servidor Flask en modo de un solo hilo
+    app.run(debug=True, threaded=False)
